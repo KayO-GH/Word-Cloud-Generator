@@ -20,6 +20,9 @@ from os.path import isfile, join
 from tqdm import tqdm
 from wordcloud import WordCloud
 
+# Configure page title
+st.set_page_config(page_title="Document Cofinder")
+
 nltk.download('stopwords')
 
 uploaded = {} # to hold files and file info after uploading
@@ -30,7 +33,7 @@ SCANNED_PDFS_TAGGED = False # Only set to True if you have named ALL scanned PDF
 # add title
 st.title("Wordcloud Generator")
 # add a subtitle
-st.subheader("A research tool for generating wordclouds from multiple files at a go.")
+st.subheader("An OCR-enabled research tool for generating wordclouds from multiple files at a go.")
 # Note on supported formats
 st.info("Currently supports PDFs, Word Documents, and raw text files.", icon='ℹ️')
 # Add file uploader
@@ -95,6 +98,7 @@ def get_combined_cloud(uploaded_files):
             files_text += (single_file_text + " ")
     create_word_cloud(files_text, "combined Word Cloud")
 
+
 def get_individual_clouds(uploaded_files):
     for uploaded_file in uploaded_files:
         single_file_text = ""
@@ -121,6 +125,7 @@ def get_individual_clouds(uploaded_files):
         else:
             single_file_text = StringIO(uploaded_file.getvalue().decode("utf-8")).read()
         create_word_cloud(single_file_text, uploaded_file.name)
+
 
 if st.button('Generate'):
     if combine_wordcloud:
