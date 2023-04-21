@@ -27,6 +27,12 @@ INDIVIDUAL_WORD_CLOUDS = False
 CONTAINS_SCANNED_PDFS = False # Set to true if you know your data contains scanned documents, but you cannot specify which are scanned
 SCANNED_PDFS_TAGGED = False # Only set to True if you have named ALL scanned PDFs correctly i.e. file name ends with _scanned.pdf
 
+# add title
+st.title("Wordcloud Generator")
+# add a subtitle
+st.subheader("A research tool for generating wordclouds from multiple files at a go.")
+# Note on supported formats
+st.info("Currently supports PDFs, Word Documents, and raw text files.", icon='ℹ️')
 # Add file uploader
 uploaded_files = st.file_uploader(
     "Add your reference PDF files:", accept_multiple_files=True)
