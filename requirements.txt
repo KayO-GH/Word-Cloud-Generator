@@ -6,3 +6,4 @@ pytesseract
 matplotlib
 Pillow
 tqdm
+wordcloud
