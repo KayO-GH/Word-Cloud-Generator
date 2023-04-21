@@ -13,6 +13,7 @@ import pdfplumber
 import pytesseract
 
 from collections import Counter
+from io import StringIO
 from nltk.corpus import stopwords
 from os import listdir
 from os.path import isfile, join
@@ -44,14 +45,6 @@ def create_word_cloud(text, title):
 
     # Count the words using Python's Counter
     word_cloud_dict = Counter(words_to_count)
-
-    # Save word counts to CSV file
-    # with open(f"./output/{title}.csv",'w') as csvfile:
-    #   fieldnames=["word", "count"]
-    #   writer=csv.writer(csvfile)
-    #   writer.writerow(fieldnames)
-    #   for key, value in word_cloud_dict.items():
-    #       writer.writerow([key, value]) 
 
     wordcloud = WordCloud(
                       max_font_size=40, 
@@ -87,20 +80,29 @@ def get_combined_cloud(uploaded_files):
 def get_individual_clouds(uploaded_files):
     for uploaded_file in uploaded_files:
         single_file_text = ""
-        with fitz.open(stream=uploaded_file.read()) as doc:
-            for page in doc.pages():
-                extracted_text = page.get_text()
-                # If no text was found, assume page was scanned and treat as picture
-                if len(extracted_text) == 0:
-                    pix = page.get_pixmap()
-                    output = "outfile.png"
-                    pix.save(output)
-                    single_file_text += (pytesseract.image_to_string('outfile.png').lower() + " ")
-                    os.remove("./outfile.png")
-                else:
-                    single_file_text += (extracted_text + " ")
-            create_word_cloud(single_file_text, uploaded_file.name)
-    
+        # PDFs
+        if uploaded_file.name.lower().endswith('.pdf'):
+            with fitz.open(stream=uploaded_file.read()) as doc:
+                for page in doc.pages():
+                    extracted_text = page.get_text()
+                    # If no text was found, assume page was scanned and treat as picture
+                    if len(extracted_text) == 0:
+                        pix = page.get_pixmap()
+                        output = "outfile.png"
+                        pix.save(output)
+                        single_file_text += (pytesseract.image_to_string('outfile.png').lower() + " ")
+                        os.remove("./outfile.png")
+                    else:
+                        single_file_text += (extracted_text + " ")
+        # WORD DOCS
+        elif uploaded_file.name.lower().endswith(('.doc', '.docx')):
+            docx = zipfile.ZipFile(uploaded_file)
+            single_file_text = docx.read('word/document.xml').decode('utf-8')
+            single_file_text = re.sub('<(.|\n)*?>','',single_file_text).lower()
+        # PLAIN TEXT
+        else:
+            single_file_text = StringIO(uploaded_file.getvalue().decode("utf-8")).read()
+        create_word_cloud(single_file_text, uploaded_file.name)
 
 if st.button('Generate'):
     if combine_wordcloud:
