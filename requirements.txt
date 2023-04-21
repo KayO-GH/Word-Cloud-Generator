@@ -3,5 +3,6 @@ nltk
 pdfplumber
 pymupdf
 pytesseract
-tqdm
+matplotlib
 Pillow
+tqdm
