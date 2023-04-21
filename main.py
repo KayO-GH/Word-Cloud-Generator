@@ -70,18 +70,35 @@ def create_word_cloud(text, title):
 def get_combined_cloud(uploaded_files):
     files_text = ""
     for uploaded_file in uploaded_files:
-        with pdfplumber.open(uploaded_file) as pdf:
-            for page in pdf.pages:
-                files_text += (page.extract_text()+" ")
-    
+        with fitz.open(stream=uploaded_file.read()) as doc:
+            for page in doc.pages():
+                extracted_text = page.get_text()
+                # If no text was found, assume page was scanned and treat as picture
+                if len(extracted_text) == 0:
+                    pix = page.get_pixmap()
+                    output = "outfile.png"
+                    pix.save(output)
+                    files_text += (pytesseract.image_to_string('outfile.png').lower() + " ")
+                    os.remove("./outfile.png")
+                else:
+                    files_text += (extracted_text + " ")
     create_word_cloud(files_text, "combined Word Cloud")
 
 def get_individual_clouds(uploaded_files):
     for uploaded_file in uploaded_files:
         single_file_text = ""
-        with pdfplumber.open(uploaded_file) as pdf:
-            for page in pdf.pages:
-                single_file_text += (page.extract_text()+" ")
+        with fitz.open(stream=uploaded_file.read()) as doc:
+            for page in doc.pages():
+                extracted_text = page.get_text()
+                # If no text was found, assume page was scanned and treat as picture
+                if len(extracted_text) == 0:
+                    pix = page.get_pixmap()
+                    output = "outfile.png"
+                    pix.save(output)
+                    single_file_text += (pytesseract.image_to_string('outfile.png').lower() + " ")
+                    os.remove("./outfile.png")
+                else:
+                    single_file_text += (extracted_text + " ")
             create_word_cloud(single_file_text, uploaded_file.name)
     
 
