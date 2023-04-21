@@ -21,7 +21,7 @@ from tqdm import tqdm
 from wordcloud import WordCloud
 
 # Configure page title
-st.set_page_config(page_title="Document Cofinder")
+st.set_page_config(page_title="Wordcloud Generator")
 
 nltk.download('stopwords')
 
