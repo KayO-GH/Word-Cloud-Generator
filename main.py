@@ -63,18 +63,30 @@ def create_word_cloud(text, title):
 def get_combined_cloud(uploaded_files):
     files_text = ""
     for uploaded_file in uploaded_files:
-        with fitz.open(stream=uploaded_file.read()) as doc:
-            for page in doc.pages():
-                extracted_text = page.get_text()
-                # If no text was found, assume page was scanned and treat as picture
-                if len(extracted_text) == 0:
-                    pix = page.get_pixmap()
-                    output = "outfile.png"
-                    pix.save(output)
-                    files_text += (pytesseract.image_to_string('outfile.png').lower() + " ")
-                    os.remove("./outfile.png")
-                else:
-                    files_text += (extracted_text + " ")
+        # PDFs
+        if uploaded_file.name.lower().endswith('.pdf'):
+            with fitz.open(stream=uploaded_file.read()) as doc:
+                for page in doc.pages():
+                    extracted_text = page.get_text()
+                    # If no text was found, assume page was scanned and treat as picture
+                    if len(extracted_text) == 0:
+                        pix = page.get_pixmap()
+                        output = "outfile.png"
+                        pix.save(output)
+                        files_text += (pytesseract.image_to_string('outfile.png').lower() + " ")
+                        os.remove("./outfile.png")
+                    else:
+                        files_text += (extracted_text + " ")
+        # WORD DOCS
+        elif uploaded_file.name.lower().endswith(('.doc', '.docx')):
+            docx = zipfile.ZipFile(uploaded_file)
+            single_file_text = docx.read('word/document.xml').decode('utf-8')
+            single_file_text = re.sub('<(.|\n)*?>','',single_file_text).lower()
+            files_text += (single_file_text + " ")
+        # PLAIN TEXT
+        else:
+            single_file_text = StringIO(uploaded_file.getvalue().decode("utf-8")).read()
+            files_text += (single_file_text + " ")
     create_word_cloud(files_text, "combined Word Cloud")
 
 def get_individual_clouds(uploaded_files):
